@@ -1,197 +1,32 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>校園跑酷</title>
-
-<style>
-body{
-    margin:0;
-    overflow:hidden;
-    background:#87CEEB;
-    font-family:Arial,sans-serif;
-}
-
-#game{
-    width:100vw;
-    height:100vh;
-    position:relative;
-}
-
-#ground{
-    position:absolute;
-    bottom:0;
-    width:100%;
-    height:120px;
-    background:#4CAF50;
-}
-
-#player{
-    position:absolute;
-    width:60px;
-    height:60px;
-    background:#2196F3;
-    bottom:120px;
-    left:100px;
-    border-radius:10px;
-}
-
-.obstacle{
-    position:absolute;
-    width:50px;
-    height:70px;
-    background:#F44336;
-    bottom:120px;
-}
-
-#score{
-    position:absolute;
-    top:20px;
-    left:20px;
-    font-size:32px;
-    font-weight:bold;
-}
-
-#gameover{
-    position:absolute;
-    width:100%;
-    top:40%;
-    text-align:center;
-    font-size:48px;
-    display:none;
-}
-</style>
+<title>20秒超商挑戰</title>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div id="game">
-    <div id="score">分數: 0</div>
-    <div id="gameover">
-        遊戲結束<br>
-        按 R 重新開始
-    </div>
+<h1>🏪 20秒超商挑戰</h1>
 
-    <div id="player"></div>
-    <div id="ground"></div>
+<div class="info">
+    <h2>🎯 目標金額：<span id="target"></span> 元</h2>
+    <h2>🛒 已購買：<span id="total">0</span> 元</h2>
+    <h2>⏰ 剩餘：<span id="time">20</span> 秒</h2>
 </div>
 
-<script>
+<div id="products" class="products"></div>
 
-const player = document.getElementById("player");
-const scoreText = document.getElementById("score");
-const gameoverText = document.getElementById("gameover");
+<button onclick="restart()">重新開始</button>
 
-let y = 0;
-let velocity = 0;
-let gravity = 0.9;
-let jumping = false;
+<h2 id="result"></h2>
 
-let obstacles = [];
-let score = 0;
-let speed = 7;
-let gameOver = false;
-
-function jump(){
-    if(!jumping){
-        velocity = 18;
-        jumping = true;
-    }
-}
-
-document.addEventListener("keydown",(e)=>{
-
-    if(e.code==="Space"){
-        jump();
-    }
-
-    if(e.key==="r" || e.key==="R"){
-        if(gameOver){
-            location.reload();
-        }
-    }
-
-});
-
-function createObstacle(){
-
-    let obs = document.createElement("div");
-    obs.classList.add("obstacle");
-
-    obs.style.left = window.innerWidth + "px";
-
-    document.getElementById("game").appendChild(obs);
-
-    obstacles.push(obs);
-}
-
-setInterval(()=>{
-    if(!gameOver){
-        createObstacle();
-    }
-},1500);
-
-function checkCollision(a,b){
-
-    let r1 = a.getBoundingClientRect();
-    let r2 = b.getBoundingClientRect();
-
-    return !(
-        r1.right < r2.left ||
-        r1.left > r2.right ||
-        r1.bottom < r2.top ||
-        r1.top > r2.bottom
-    );
-}
-
-function update(){
-
-    if(gameOver) return;
-
-    velocity -= gravity;
-    y += velocity;
-
-    if(y <= 0){
-        y = 0;
-        velocity = 0;
-        jumping = false;
-    }
-
-    player.style.bottom = (120 + y) + "px";
-
-    obstacles.forEach((obs,index)=>{
-
-        let x = parseInt(obs.style.left);
-
-        x -= speed;
-
-        obs.style.left = x + "px";
-
-        if(x < -60){
-            obs.remove();
-            obstacles.splice(index,1);
-            score += 10;
-        }
-
-        if(checkCollision(player,obs)){
-            gameOver = true;
-            gameoverText.style.display="block";
-        }
-
-    });
-
-    score++;
-    scoreText.innerHTML="分數: "+score;
-
-    speed += 0.001;
-
-    requestAnimationFrame(update);
-}
-
-update();
-
-</script>
+<script src="script.js"></script>
 
 </body>
 </html>
+
+
+
