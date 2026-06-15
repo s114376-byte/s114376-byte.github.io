@@ -2,144 +2,181 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<title>20秒便利商店挑戰</title>
+<title>進階記憶便利商店</title>
+
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        text-align: center;
-        background: #f5f7ff;
-        margin-top: 50px;
-    }
+body {
+    font-family: Arial;
+    text-align: center;
+    background: linear-gradient(135deg, #f6f8ff, #e9f0ff);
+    margin-top: 30px;
+}
 
-    h1 {
-        color: #333;
-    }
+h1 {
+    color: #333;
+}
 
-    #shop {
-        margin-top: 30px;
-    }
+.card {
+    background: white;
+    display: inline-block;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    width: 350px;
+}
 
-    button {
-        font-size: 20px;
-        padding: 15px 25px;
-        margin: 10px;
-        cursor: pointer;
-        border: none;
-        border-radius: 10px;
-        background: #4CAF50;
-        color: white;
-    }
+#items {
+    font-size: 22px;
+    margin: 15px 0;
+    min-height: 40px;
+}
 
-    button:disabled {
-        background: #aaa;
-        cursor: not-allowed;
-    }
+input, select {
+    padding: 10px;
+    font-size: 16px;
+    margin: 5px;
+    width: 90%;
+}
 
-    #startBtn {
-        background: #2196F3;
-    }
+button {
+    padding: 10px 15px;
+    font-size: 16px;
+    margin: 5px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    color: white;
+}
 
-    #resetBtn {
-        background: #f44336;
-    }
+#startBtn { background: #2196F3; }
+#checkBtn { background: #4CAF50; }
+#resetBtn { background: #f44336; }
 
-    #score {
-        font-size: 24px;
-        margin-top: 20px;
-    }
+#result {
+    margin-top: 15px;
+    font-size: 18px;
+}
 
-    #time {
-        font-size: 24px;
-        color: #e91e63;
-    }
+#scoreBoard {
+    margin-top: 10px;
+    color: #555;
+}
 </style>
 </head>
 
 <body>
 
-<h1>🏪 20 秒便利商店挑戰</h1>
+<h1>🏪 進階記憶便利商店</h1>
 
-<p>在 20 秒內盡量點擊「買商品」！</p>
+<div class="card">
 
-<div id="time">時間：20</div>
-<div id="score">分數：0</div>
+    <div>
+        ⏱️ 記憶時間：
+        <select id="timeSelect">
+            <option value="1000">1 秒（超難）</option>
+            <option value="3000" selected>3 秒（正常）</option>
+            <option value="5000">5 秒（簡單）</option>
+        </select>
+    </div>
 
-<div id="shop">
-    <button id="buyBtn" disabled>🛒 買商品</button>
+    <div id="items">按開始遊戲</div>
+
+    <button id="startBtn" onclick="startGame()">開始遊戲</button>
+
+    <input id="answer" placeholder="輸入商品，用空格分開">
+
+    <button id="checkBtn" onclick="checkAnswer()" disabled>提交答案</button>
+    <button id="resetBtn" onclick="resetGame()">重置</button>
+
+    <div id="result"></div>
+    <div id="scoreBoard">🏆 最高分：0</div>
+
 </div>
 
-<br>
-
-<button id="startBtn">開始遊戲</button>
-<button id="resetBtn">重置</button>
-
 <script>
-let timeLeft = 20;
+const itemsPool = [
+    "牛奶","可樂","泡麵","飯糰","吐司",
+    "咖啡","茶葉蛋","餅乾","巧克力","果汁",
+    "優格","沙拉","漢堡","冰淇淋","礦泉水"
+];
+
+let shownItems = [];
+let canAnswer = false;
 let score = 0;
-let timer = null;
-let playing = false;
+let highScore = localStorage.getItem("highScore") || 0;
 
-const timeDisplay = document.getElementById("time");
-const scoreDisplay = document.getElementById("score");
-const buyBtn = document.getElementById("buyBtn");
-const startBtn = document.getElementById("startBtn");
-const resetBtn = document.getElementById("resetBtn");
-
-function updateUI() {
-    timeDisplay.textContent = "時間：" + timeLeft;
-    scoreDisplay.textContent = "分數：" + score;
-}
+document.getElementById("scoreBoard").innerText = "🏆 最高分：" + highScore;
 
 function startGame() {
-    if (playing) return;
-
-    playing = true;
-    timeLeft = 20;
+    shownItems = [];
+    canAnswer = false;
     score = 0;
-    buyBtn.disabled = false;
 
-    updateUI();
+    document.getElementById("result").innerText = "";
+    document.getElementById("answer").value = "";
 
-    timer = setInterval(() => {
-        timeLeft--;
-        updateUI();
-
-        if (timeLeft <= 0) {
-            endGame();
+    // 隨機 5 個
+    while (shownItems.length < 5) {
+        let item = itemsPool[Math.floor(Math.random() * itemsPool.length)];
+        if (!shownItems.includes(item)) {
+            shownItems.push(item);
         }
-    }, 1000);
+    }
+
+    document.getElementById("items").innerText =
+        "🛒 " + shownItems.join(" ｜ ");
+
+    document.getElementById("checkBtn").disabled = true;
+
+    let time = parseInt(document.getElementById("timeSelect").value);
+
+    setTimeout(() => {
+        document.getElementById("items").innerText =
+            "❓ 商品已消失，開始輸入！";
+
+        canAnswer = true;
+        document.getElementById("checkBtn").disabled = false;
+    }, time);
 }
 
-function endGame() {
-    clearInterval(timer);
-    playing = false;
-    buyBtn.disabled = true;
-    alert("時間到！你的分數是：" + score);
+function checkAnswer() {
+    if (!canAnswer) return;
+
+    let input = document.getElementById("answer").value.trim();
+    let answers = input.split(" ");
+
+    let correct = 0;
+
+    for (let a of answers) {
+        if (shownItems.includes(a)) {
+            correct++;
+        }
+    }
+
+    score = correct;
+
+    document.getElementById("result").innerText =
+        "你答對了 " + correct + " / 5 個 🧠";
+
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem("highScore", highScore);
+        document.getElementById("scoreBoard").innerText =
+            "🏆 最高分：" + highScore + " 🎉";
+    }
 }
 
 function resetGame() {
-    clearInterval(timer);
-    playing = false;
-    timeLeft = 20;
+    shownItems = [];
+    canAnswer = false;
     score = 0;
-    buyBtn.disabled = true;
-    updateUI();
+
+    document.getElementById("items").innerText = "按開始遊戲";
+    document.getElementById("result").innerText = "";
+    document.getElementById("answer").value = "";
+    document.getElementById("checkBtn").disabled = true;
 }
-
-buyBtn.addEventListener("click", () => {
-    if (!playing) return;
-    score++;
-    updateUI();
-});
-
-startBtn.addEventListener("click", startGame);
-resetBtn.addEventListener("click", resetGame);
-
-updateUI();
 </script>
 
 </body>
 </html>
-
-
-
