@@ -3,27 +3,249 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>20秒超商挑戰</title>
-<link rel="stylesheet" href="style.css">
+<title>20秒便利商店挑戰</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#ececec;
+}
+
+header{
+    background:linear-gradient(90deg,#ff7a00,#2fa84f,#d00000);
+    color:white;
+    text-align:center;
+    padding:20px;
+    font-size:32px;
+    font-weight:bold;
+}
+
+.info{
+    background:white;
+    margin:20px auto;
+    width:90%;
+    max-width:900px;
+    border-radius:12px;
+    padding:15px;
+    display:flex;
+    justify-content:space-around;
+    font-size:22px;
+}
+
+.products{
+    width:90%;
+    max-width:900px;
+    margin:auto;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+    gap:15px;
+}
+
+.card{
+    background:white;
+    border-radius:12px;
+    box-shadow:0 3px 8px gray;
+    text-align:center;
+    cursor:pointer;
+    transition:.2s;
+    padding:20px;
+}
+
+.card:hover{
+    transform:scale(1.05);
+}
+
+.emoji{
+    font-size:60px;
+}
+
+.price{
+    color:#ff6600;
+    font-size:28px;
+    font-weight:bold;
+}
+
+.cart{
+    background:white;
+    width:90%;
+    max-width:900px;
+    margin:20px auto;
+    border-radius:12px;
+    padding:20px;
+}
+
+button{
+    padding:12px 25px;
+    font-size:20px;
+    background:#2196F3;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#0b7dda;
+}
+
+#msg{
+    color:red;
+    font-size:30px;
+    text-align:center;
+}
+</style>
 </head>
 
 <body>
 
-<h1>🏪 20秒超商挑戰</h1>
+<header>🏪20秒便利商店挑戰</header>
 
 <div class="info">
-    <h2>🎯 目標金額：<span id="target"></span> 元</h2>
-    <h2>🛒 已購買：<span id="total">0</span> 元</h2>
-    <h2>⏰ 剩餘：<span id="time">20</span> 秒</h2>
+<div>🎯目標：<span id="target"></span>元</div>
+<div>🛒目前：<span id="total">0</span>元</div>
+<div>⏰<span id="time">20</span>秒</div>
 </div>
 
-<div id="products" class="products"></div>
+<div class="products" id="products"></div>
+
+<div class="cart">
+<h2>購物籃</h2>
+<ul id="cart"></ul>
 
 <button onclick="restart()">重新開始</button>
 
-<h2 id="result"></h2>
+<h2 id="msg"></h2>
 
-<script src="script.js"></script>
+</div>
+
+<script>
+
+const items=[
+["🍙","飯糰",35],
+["🥚","茶葉蛋",13],
+["🥤","可樂",30],
+["🥛","牛奶",42],
+["🍜","泡麵",55],
+["🍪","餅乾",39],
+["☕","咖啡",45],
+["💧","礦泉水",20],
+["🍫","巧克力",28],
+["🥪","三明治",48]
+];
+
+let total=0;
+let target=0;
+let time=20;
+let gameOver=false;
+let timer;
+
+function draw(){
+
+let html="";
+
+items.forEach((item,index)=>{
+
+html+=`
+<div class="card" onclick="buy(${index})">
+
+<div class="emoji">${item[0]}</div>
+
+<h2>${item[1]}</h2>
+
+<div class="price">$${item[2]}</div>
+
+</div>
+`;
+
+});
+
+document.getElementById("products").innerHTML=html;
+
+}
+
+function buy(i){
+
+if(gameOver) return;
+
+total+=items[i][2];
+
+document.getElementById("total").innerHTML=total;
+
+document.getElementById("cart").innerHTML+=
+`<li>${items[i][0]} ${items[i][1]} ${items[i][2]}元</li>`;
+
+if(total==target){
+
+finish("🎉 恭喜成功！");
+
+}
+
+if(total>target){
+
+finish("💥 超過目標金額！");
+
+}
+
+}
+
+function finish(text){
+
+gameOver=true;
+
+clearInterval(timer);
+
+document.getElementById("msg").innerHTML=text;
+
+}
+
+function restart(){
+
+clearInterval(timer);
+
+total=0;
+time=20;
+gameOver=false;
+
+target=Math.floor(Math.random()*101)+100;
+
+document.getElementById("target").innerHTML=target;
+document.getElementById("total").innerHTML=0;
+document.getElementById("time").innerHTML=20;
+document.getElementById("msg").innerHTML="";
+document.getElementById("cart").innerHTML="";
+
+draw();
+
+timer=setInterval(()=>{
+
+if(gameOver)return;
+
+time--;
+
+document.getElementById("time").innerHTML=time;
+
+if(time<=0){
+
+if(total==target){
+
+finish("🎉 恭喜成功！");
+
+}else{
+
+finish("⌛ 時間到！");
+
+}
+
+}
+
+},1000);
+
+}
+
+restart();
+
+</script>
 
 </body>
 </html>
