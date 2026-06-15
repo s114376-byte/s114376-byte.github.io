@@ -2,179 +2,163 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<title>進階記憶便利商店</title>
+<title>互動記憶便利商店</title>
 
 <style>
 body {
     font-family: Arial;
     text-align: center;
-    background: linear-gradient(135deg, #f6f8ff, #e9f0ff);
-    margin-top: 30px;
+    background: #f4f6ff;
 }
 
 h1 {
-    color: #333;
+    margin-top: 20px;
 }
 
 .card {
     background: white;
     display: inline-block;
-    padding: 25px;
+    padding: 20px;
     border-radius: 15px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    width: 350px;
+    width: 380px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
 }
 
 #items {
     font-size: 22px;
-    margin: 15px 0;
+    margin: 10px 0;
     min-height: 40px;
 }
 
-input, select {
-    padding: 10px;
-    font-size: 16px;
-    margin: 5px;
-    width: 90%;
-}
-
 button {
-    padding: 10px 15px;
-    font-size: 16px;
+    padding: 10px 12px;
     margin: 5px;
-    cursor: pointer;
     border: none;
     border-radius: 8px;
+    cursor: pointer;
+}
+
+#startBtn { background: #2196F3; color: white; }
+#resetBtn { background: #f44336; color: white; }
+
+#shop {
+    margin-top: 15px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+}
+
+.itemBtn {
+    background: #eee;
+}
+
+.itemBtn.correct {
+    background: #4CAF50;
     color: white;
 }
 
-#startBtn { background: #2196F3; }
-#checkBtn { background: #4CAF50; }
-#resetBtn { background: #f44336; }
-
-#result {
-    margin-top: 15px;
-    font-size: 18px;
+.itemBtn.wrong {
+    background: #f44336;
+    color: white;
 }
 
-#scoreBoard {
+#score {
     margin-top: 10px;
-    color: #555;
+    font-size: 18px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🏪 進階記憶便利商店</h1>
+<h1>🏪 互動記憶便利商店</h1>
 
 <div class="card">
 
-    <div>
-        ⏱️ 記憶時間：
-        <select id="timeSelect">
-            <option value="1000">1 秒（超難）</option>
-            <option value="3000" selected>3 秒（正常）</option>
-            <option value="5000">5 秒（簡單）</option>
-        </select>
-    </div>
+<div id="items">按開始遊戲</div>
 
-    <div id="items">按開始遊戲</div>
+<button id="startBtn" onclick="startGame()">開始遊戲</button>
+<button id="resetBtn" onclick="resetGame()">重置</button>
 
-    <button id="startBtn" onclick="startGame()">開始遊戲</button>
+<div id="shop"></div>
 
-    <input id="answer" placeholder="輸入商品，用空格分開">
-
-    <button id="checkBtn" onclick="checkAnswer()" disabled>提交答案</button>
-    <button id="resetBtn" onclick="resetGame()">重置</button>
-
-    <div id="result"></div>
-    <div id="scoreBoard">🏆 最高分：0</div>
+<div id="score">分數：0</div>
 
 </div>
 
 <script>
-const itemsPool = [
+const pool = [
     "牛奶","可樂","泡麵","飯糰","吐司",
     "咖啡","茶葉蛋","餅乾","巧克力","果汁",
-    "優格","沙拉","漢堡","冰淇淋","礦泉水"
+    "沙拉","漢堡"
 ];
 
-let shownItems = [];
-let canAnswer = false;
+let target = [];
+let canPlay = false;
 let score = 0;
-let highScore = localStorage.getItem("highScore") || 0;
-
-document.getElementById("scoreBoard").innerText = "🏆 最高分：" + highScore;
 
 function startGame() {
-    shownItems = [];
-    canAnswer = false;
+    target = [];
     score = 0;
+    canPlay = false;
 
-    document.getElementById("result").innerText = "";
-    document.getElementById("answer").value = "";
+    document.getElementById("score").innerText = "分數：0";
+    document.getElementById("shop").innerHTML = "";
 
-    // 隨機 5 個
-    while (shownItems.length < 5) {
-        let item = itemsPool[Math.floor(Math.random() * itemsPool.length)];
-        if (!shownItems.includes(item)) {
-            shownItems.push(item);
-        }
+    // 隨機 5 個要記的
+    while (target.length < 5) {
+        let item = pool[Math.floor(Math.random() * pool.length)];
+        if (!target.includes(item)) target.push(item);
     }
 
     document.getElementById("items").innerText =
-        "🛒 " + shownItems.join(" ｜ ");
-
-    document.getElementById("checkBtn").disabled = true;
-
-    let time = parseInt(document.getElementById("timeSelect").value);
+        "🛒 記住這些：" + target.join(" ｜ ");
 
     setTimeout(() => {
         document.getElementById("items").innerText =
-            "❓ 商品已消失，開始輸入！";
+            "❓ 開始選擇你記得的商品！";
 
-        canAnswer = true;
-        document.getElementById("checkBtn").disabled = false;
-    }, time);
+        canPlay = true;
+        renderShop();
+    }, 3000);
 }
 
-function checkAnswer() {
-    if (!canAnswer) return;
+function renderShop() {
+    const shop = document.getElementById("shop");
+    shop.innerHTML = "";
 
-    let input = document.getElementById("answer").value.trim();
-    let answers = input.split(" ");
+    pool.forEach(item => {
+        let btn = document.createElement("button");
+        btn.innerText = item;
+        btn.className = "itemBtn";
 
-    let correct = 0;
+        btn.onclick = () => {
+            if (!canPlay) return;
 
-    for (let a of answers) {
-        if (shownItems.includes(a)) {
-            correct++;
-        }
-    }
+            if (target.includes(item)) {
+                btn.classList.add("correct");
+                score++;
+            } else {
+                btn.classList.add("wrong");
+                score--;
+            }
 
-    score = correct;
+            document.getElementById("score").innerText =
+                "分數：" + score;
+        };
 
-    document.getElementById("result").innerText =
-        "你答對了 " + correct + " / 5 個 🧠";
-
-    if (score > highScore) {
-        highScore = score;
-        localStorage.setItem("highScore", highScore);
-        document.getElementById("scoreBoard").innerText =
-            "🏆 最高分：" + highScore + " 🎉";
-    }
+        shop.appendChild(btn);
+    });
 }
 
 function resetGame() {
-    shownItems = [];
-    canAnswer = false;
+    target = [];
+    canPlay = false;
     score = 0;
 
     document.getElementById("items").innerText = "按開始遊戲";
-    document.getElementById("result").innerText = "";
-    document.getElementById("answer").value = "";
-    document.getElementById("checkBtn").disabled = true;
+    document.getElementById("shop").innerHTML = "";
+    document.getElementById("score").innerText = "分數：0";
 }
 </script>
 
