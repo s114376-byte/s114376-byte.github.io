@@ -1,80 +1,144 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
-
+<html lang="zh-Hant">
 <head>
-
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>20秒便利商店挑戰</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background: #f5f7ff;
+        margin-top: 50px;
+    }
 
-<title>🏪20秒便利商店挑戰</title>
+    h1 {
+        color: #333;
+    }
 
-<link rel="stylesheet" href="style.css">
+    #shop {
+        margin-top: 30px;
+    }
 
+    button {
+        font-size: 20px;
+        padding: 15px 25px;
+        margin: 10px;
+        cursor: pointer;
+        border: none;
+        border-radius: 10px;
+        background: #4CAF50;
+        color: white;
+    }
+
+    button:disabled {
+        background: #aaa;
+        cursor: not-allowed;
+    }
+
+    #startBtn {
+        background: #2196F3;
+    }
+
+    #resetBtn {
+        background: #f44336;
+    }
+
+    #score {
+        font-size: 24px;
+        margin-top: 20px;
+    }
+
+    #time {
+        font-size: 24px;
+        color: #e91e63;
+    }
+</style>
 </head>
 
 <body>
 
-<header>
+<h1>🏪 20 秒便利商店挑戰</h1>
 
-<div class="logo">
-🏪 20秒便利商店挑戰
+<p>在 20 秒內盡量點擊「買商品」！</p>
+
+<div id="time">時間：20</div>
+<div id="score">分數：0</div>
+
+<div id="shop">
+    <button id="buyBtn" disabled>🛒 買商品</button>
 </div>
 
-</header>
+<br>
 
-<div class="game">
+<button id="startBtn">開始遊戲</button>
+<button id="resetBtn">重置</button>
 
-<div class="top">
+<script>
+let timeLeft = 20;
+let score = 0;
+let timer = null;
+let playing = false;
 
-<div class="box">
-<h3>🎯 目標金額</h3>
-<p><span id="target">0</span> 元</p>
-</div>
+const timeDisplay = document.getElementById("time");
+const scoreDisplay = document.getElementById("score");
+const buyBtn = document.getElementById("buyBtn");
+const startBtn = document.getElementById("startBtn");
+const resetBtn = document.getElementById("resetBtn");
 
-<div class="box">
-<h3>🛒 已購買</h3>
-<p><span id="total">0</span> 元</p>
-</div>
+function updateUI() {
+    timeDisplay.textContent = "時間：" + timeLeft;
+    scoreDisplay.textContent = "分數：" + score;
+}
 
-<div class="box">
-<h3>⏰ 剩餘時間</h3>
-<p><span id="time">20</span> 秒</p>
-</div>
+function startGame() {
+    if (playing) return;
 
-</div>
+    playing = true;
+    timeLeft = 20;
+    score = 0;
+    buyBtn.disabled = false;
 
-<h2>商品區</h2>
+    updateUI();
 
-<div id="products" class="products">
+    timer = setInterval(() => {
+        timeLeft--;
+        updateUI();
 
-</div>
+        if (timeLeft <= 0) {
+            endGame();
+        }
+    }, 1000);
+}
 
-<div class="cart">
+function endGame() {
+    clearInterval(timer);
+    playing = false;
+    buyBtn.disabled = true;
+    alert("時間到！你的分數是：" + score);
+}
 
-<h2>🛒 購物籃</h2>
+function resetGame() {
+    clearInterval(timer);
+    playing = false;
+    timeLeft = 20;
+    score = 0;
+    buyBtn.disabled = true;
+    updateUI();
+}
 
-<ul id="cartList">
+buyBtn.addEventListener("click", () => {
+    if (!playing) return;
+    score++;
+    updateUI();
+});
 
-</ul>
+startBtn.addEventListener("click", startGame);
+resetBtn.addEventListener("click", resetGame);
 
-<h2 id="result"></h2>
-
-<div class="buttons">
-
-<button id="restartBtn">
-重新開始
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-<script src="script.js"></script>
+updateUI();
+</script>
 
 </body>
-
 </html>
 
 
